@@ -12,7 +12,16 @@
           "package_name": "com.example.easeoutlife"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "768198234267-ao51hdn0urf5sd8busebl8gp11u51fcb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.easeoutlife",
+            "certificate_hash": "ed61b40eddb685842b6eb3f49cf657e5c5dd3fc2"
+          }
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyC1Do84z_b4g9_kO3XfAzElkUghwAaHlQA"
@@ -20,7 +29,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "768198234267-vtc7iaauqpcd0mm2fd6huh661clnt0uo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
