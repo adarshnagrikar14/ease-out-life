@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "768198234267",
+    "project_id": "ease-out-life",
+    "storage_bucket": "ease-out-life.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:768198234267:android:9ffaafdf156c52ea5c763e",
+        "android_client_info": {
+          "package_name": "com.example.easeoutlife"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1Do84z_b4g9_kO3XfAzElkUghwAaHlQA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
