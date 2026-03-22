@@ -63,6 +63,30 @@ class AuthService {
   // Check if calendar scope is already granted
   bool get isSignedInWithGoogle => _googleSignIn.currentUser != null;
 
+  /// Ensures GoogleSignIn has an active session and calendar scope.
+  /// Tries silent restore first, then interactive sign-in, then scope request.
+  Future<gcal.CalendarApi?> ensureCalendarAccess() async {
+    var user = _googleSignIn.currentUser;
+
+    // Restore session silently after app restart
+    user ??= await _googleSignIn.signInSilently();
+
+    // If still no session, do interactive sign-in
+    if (user == null) {
+      user = await _googleSignIn.signIn();
+      if (user == null) return null;
+    }
+
+    // Request calendar scope if not already granted
+    final hasScope =
+        await _googleSignIn.requestScopes([calendarScope]);
+    if (!hasScope) return null;
+
+    final httpClient = await _googleSignIn.authenticatedClient();
+    if (httpClient == null) return null;
+    return gcal.CalendarApi(httpClient);
+  }
+
   // Get authenticated Calendar API client
   Future<gcal.CalendarApi?> getCalendarApi() async {
     final httpClient = await _googleSignIn.authenticatedClient();

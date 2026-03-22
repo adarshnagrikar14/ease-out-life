@@ -151,7 +151,10 @@ class _GroceryScreenState extends State<GroceryScreen> {
     final grouped = <String, List<MapEntry<int, GroceryItem>>>{};
     for (var i = 0; i < (_groceryList?.items.length ?? 0); i++) {
       final item = _groceryList!.items[i];
-      if (_selectedDay == 'All' || item.forDay == _selectedDay) {
+      final matchDay = _selectedDay == 'All' ||
+          item.forDay.toLowerCase() == _selectedDay.toLowerCase() ||
+          item.forDay.toLowerCase().startsWith(_selectedDay.substring(0, 3).toLowerCase());
+      if (matchDay) {
         grouped.putIfAbsent(item.category, () => []);
         grouped[item.category]!.add(MapEntry(i, item));
       }
@@ -308,9 +311,17 @@ class _GroceryScreenState extends State<GroceryScreen> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 children: [
-                  _dayChip('All'),
-                  ..._dayNames
-                      .map((d) => _dayChip(d, label: d.substring(0, 3))),
+                  _dayChip('All', count: _groceryList!.items.length),
+                  ..._dayNames.map((d) => _dayChip(
+                        d,
+                        label: d.substring(0, 3),
+                        count: _groceryList!.items
+                            .where((it) =>
+                                it.forDay.toLowerCase() == d.toLowerCase() ||
+                                it.forDay.toLowerCase().startsWith(
+                                    d.substring(0, 3).toLowerCase()))
+                            .length,
+                      )),
                 ],
               ),
             ),
@@ -411,7 +422,7 @@ class _GroceryScreenState extends State<GroceryScreen> {
     );
   }
 
-  Widget _dayChip(String day, {String? label}) {
+  Widget _dayChip(String day, {String? label, int count = 0}) {
     final sel = _selectedDay == day;
     return GestureDetector(
       onTap: () => setState(() => _selectedDay = day),
@@ -431,7 +442,7 @@ class _GroceryScreenState extends State<GroceryScreen> {
         ),
         child: Center(
           child: Text(
-            label ?? day,
+            count > 0 ? '${label ?? day} ($count)' : (label ?? day),
             style: TextStyle(
               color: sel ? AppColors.primaryPurple : AppColors.textHint,
               fontSize: 12,

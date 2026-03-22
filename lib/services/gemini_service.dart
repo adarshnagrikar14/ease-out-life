@@ -16,7 +16,7 @@ class GeminiService {
 
   GeminiService() {
     _model = GenerativeModel(
-      model: 'gemini-2.0-flash',
+      model: 'gemini-3.1-flash-lite-preview',
       apiKey: _apiKey,
       generationConfig: GenerationConfig(
         temperature: 0.7,
@@ -24,7 +24,7 @@ class GeminiService {
       ),
     );
     _visionModel = GenerativeModel(
-      model: 'gemini-2.0-flash',
+      model: 'gemini-3.1-flash-lite-preview',
       apiKey: _apiKey,
       generationConfig: GenerationConfig(
         temperature: 0.4,
@@ -195,30 +195,33 @@ All values: calories in kcal, sodium in mg, rest in grams.
     final dayList = days.join(', ');
 
     final prompt = '''
-You are an Indian household grocery planner.
+You are an Indian household grocery planner for a working woman.
 
-The user has planned these meals for the week ($dayList):
+Meals planned for the week ($dayList):
 - Breakfast: $breakfast (daily)
 - Lunch: $lunch (daily)
 - Dinner: $dinner (daily)
 - Snack: $snack (daily)
 
-Generate a complete grocery shopping list to cook all these meals for the full week for 1 person.
+Generate a DAY-WISE grocery list for 1 person for 7 days.
 
-Rules:
-- Include ALL ingredients needed: vegetables, dal, rice, atta, oil, spices, dairy, protein, etc.
-- Group items by category: vegetables, fruits, grains, dairy, spices, protein, pantry, other
-- Calculate realistic quantities for 7 days for 1 person
-- Tag each item with which meal type it is primarily for (breakfast/lunch/dinner/snack)
-- Spread items across the week — tag forDay with the day the item is first needed
+CRITICAL RULES for forDay:
+- Fresh vegetables, dairy, bread, and perishables: assign to the SPECIFIC day they are needed. Spread them across all 7 days.
+- Pantry staples (rice, atta, dal, oil, spices): assign to "${ days.first}" as one-time purchase.
+- Each day ($dayList) MUST have at least 3-5 items tagged to it.
+- Use EXACT day names as given: $dayList
+- DO NOT put all items on one day. Distribute realistically.
 
-Return ONLY a JSON array:
+Categories: vegetables, fruits, grains, dairy, spices, protein, pantry, other
+
+Return ONLY a JSON array (40-55 items):
 [
-  {"name":"Onion","quantity":"1 kg","category":"vegetables","forMealType":"lunch","forDay":"Monday"},
-  {"name":"Toor Dal","quantity":"500g","category":"grains","forMealType":"dinner","forDay":"Monday"}
+  {"name":"Onion","quantity":"200g","category":"vegetables","forMealType":"lunch","forDay":"${days.first}"},
+  {"name":"Milk","quantity":"500ml","category":"dairy","forMealType":"breakfast","forDay":"${days[1]}"},
+  {"name":"Tomato","quantity":"150g","category":"vegetables","forMealType":"dinner","forDay":"${days[2]}"}
 ]
 
-Give 20-35 items covering everything needed. No extra text.
+No extra text. Only JSON.
 ''';
 
     final response = await _model.generateContent([Content.text(prompt)]);

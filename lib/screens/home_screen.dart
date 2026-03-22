@@ -4,6 +4,7 @@ import '../theme/app_colors.dart';
 import '../services/auth_service.dart';
 import '../services/gemini_service.dart';
 import '../services/storage_service.dart';
+import '../services/calendar_service.dart';
 import '../models/timetable_model.dart';
 import 'login_screen.dart';
 
@@ -18,12 +19,14 @@ class _HomeScreenState extends State<HomeScreen> {
   final _authService = AuthService();
   final _geminiService = GeminiService();
   final _storageService = StorageService();
+  late final CalendarService _calendarService;
 
   DateTime _selectedDate = DateTime.now();
   int _energyLevel = 3;
   DailyTimetable? _timetable;
   bool _loading = false;
   bool _feedbackSubmitted = false;
+  bool _syncing = false;
 
   int _feedbackRating = 3;
   final _feedbackController = TextEditingController();
@@ -31,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _calendarService = CalendarService(_authService);
     _init();
   }
 
@@ -139,6 +143,46 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _syncToCalendar() async {
+    if (_timetable == null || _syncing) return;
+    setState(() => _syncing = true);
+
+    try {
+      final count = await _calendarService.syncTimetable(_timetable!);
+      if (!mounted) return;
+
+      if (count > 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$count events synced to Google Calendar'),
+            backgroundColor: const Color(0xFF34D399),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else if (count == -1) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Calendar access not granted. Sign in with Google first.'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Sync failed: ${e.toString().length > 60 ? '${e.toString().substring(0, 60)}...' : e}'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _syncing = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = _authService.currentUser;
@@ -185,6 +229,37 @@ class _HomeScreenState extends State<HomeScreen> {
                         Icons.calendar_today_outlined,
                         onTap: _pickDate,
                       ),
+                      const SizedBox(width: 10),
+                      _syncing
+                          ? Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryPurple
+                                    .withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: AppColors.primaryPurple
+                                      .withValues(alpha: 0.3),
+                                ),
+                              ),
+                              child: const Center(
+                                child: SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 1.5,
+                                    color: AppColors.primaryPurple,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : _iconButton(
+                              Icons.sync_outlined,
+                              onTap: _timetable != null
+                                  ? _syncToCalendar
+                                  : () {},
+                            ),
                       const SizedBox(width: 10),
                       _iconButton(
                         Icons.logout_outlined,
