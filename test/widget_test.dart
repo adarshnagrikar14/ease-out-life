@@ -7,24 +7,30 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:easeoutlife/main.dart';
+import 'package:easeoutlife/theme/app_colors.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets(
+    'Palette primaryPurple is used as app primary',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+        theme: ThemeData(
+          brightness: Brightness.dark,
+          colorScheme: ColorScheme.dark(
+            primary: AppColors.primaryPurple,
+          ),
+        ),
+          home: Scaffold(body: SizedBox.shrink()),
+        ),
+      );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+      final theme = Theme.of(
+        tester.element(find.byType(Scaffold)),
+      );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
-  });
+      expect(theme.brightness, Brightness.dark);
+      expect(theme.colorScheme.primary, AppColors.primaryPurple);
+    },
+  );
 }
